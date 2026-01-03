@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Terminal Medyczny</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+body { font-family: 'Poppins', sans-serif; background-color: #fefefe; color: #222; margin:0; padding:20px; display:flex; justify-content:center; align-items:flex-start; min-height:100vh; }
+.container { width:100%; max-width:1000px; background:#fff; padding:30px 35px; border-radius:15px; box-shadow:0 8px 30px rgba(0,0,0,0.15); border:1px solid #ddd; }
+h1 { text-align:center; margin-bottom:10px; color:#c70000; font-size:2em; letter-spacing:1px; border-bottom:1px solid #ddd; padding-bottom:10px; }
+.tab-buttons { display:flex; justify-content:center; gap:10px; margin:20px 0; flex-wrap:wrap; }
+button.tab-btn { padding:10px 20px; border:none; border-radius:10px; background:#fff; color:#c70000; font-weight:600; cursor:pointer; transition:all 0.2s ease; border:1px solid #c70000; }
+button.tab-btn.active { background:#c70000; color:#fff; }
+.tab { display:none; animation: fadeIn .4s ease forwards; }
+.tab.active { display:block; }
+@keyframes fadeIn { from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
+form label { font-weight:600; display:block; margin-top:14px; margin-bottom:6px; color:#222; }
+input[type=text], input[type=number], input[type=date], input[type=time], select, textarea { width:100%; padding:10px 12px; font-size:1em; border:1px solid #ddd; background:#f8f8f8; color:#222; border-radius:8px; box-sizing:border-box; }
+textarea { min-height:100px; resize:vertical; font-family:'Poppins', sans-serif; }
+.row { display:flex; gap:12px; }
+.row > * { flex:1; }
+button[type=submit], .send-btn { margin-top:18px; background:#c70000; border:none; padding:12px 18px; color:white; font-weight:700; border-radius:10px; cursor:pointer; font-size:1em; width:100%; box-shadow:0 4px 15px rgba(199,0,0,0.3); }
+button[type=submit]:hover, .send-btn:hover { transform:translateY(-2px); }
+#statusAkt,#statusSekcja,#statusPsych,#statusRaport,#statusPotwierdzenie { margin-top:12px; font-weight:600; text-align:center; min-height:1.5em; padding:8px; border-radius:8px; }
+.status-success { background-color:#28a74533; color:#28a745; }
+.status-error { background-color:#dc354533; color:#dc3545; }
+@media(max-width:740px){ .row{flex-direction:column;} .container{padding:20px;} }
+</style>
+</head>
+<body>
+<div class="container">
+<h1>Terminal Medyczny</h1>
+
+<div class="tab-buttons">
+    <button class="tab-btn active" onclick="showTab('akt', event)">Karta Aktu Zgonu</button>
+    <button class="tab-btn" onclick="showTab('sekcja', event)">Sekcja Zwłok</button>
+    <button class="tab-btn" onclick="showTab('psych', event)">Badanie Psychologiczne</button>
+    <button class="tab-btn" onclick="showTab('potwierdzenie', event)">Potwierdzenie Badań Lekarskich</button>
+    <button class="tab-btn" onclick="showTab('raport', event)">Raport Oddział</button>
+</div>
+    <!-- AKT ZGONU -->
+    <div id="akt" class="tab active">
+        <form id="aktForm">
+            <label>**Imię i nazwisko:**</label>
+            <input type="text" id="aktImie" placeholder="np. Jan Kowalski" required>
+
+            <label>**Data urodzenia:**</label>
+            <input type="date" id="aktDataUrodzenia" required>
+
+            <label>**PESEL / ID:**</label>
+            <input type="text" id="aktPESEL" required>
+
+            <label>**Płeć:**</label>
+            <select id="aktPlec" required>
+                <option value="" disabled selected>Wybierz</option>
+                <option>M</option>
+                <option>K</option>
+            </select>
+
+            <label>**Adres zamieszkania:**</label>
+            <input type="text" id="aktAdres">
+
+            <label>**Data zgonu:**</label>
+            <input type="date" id="aktDataZgonu">
+
+            <label>**Godzina zgonu:**</label>
+            <input type="time" id="aktGodzinaZgonu">
+
+            <label>**Miejsce zgonu:**</label>
+            <select id="aktMiejsce">
+                <option value="" disabled selected>**Wybierz**</option>
+                <option>Szpital</option>
+                <option>Dom</option>
+                <option>Miejsce publiczne</option>
+                <option>Inne</option>
+            </select>
+            <input type="text" id="aktMiejsceInne" placeholder="Jeśli 'Inne', wpisz miejsce" style="margin-top:8px; display:none;">
+
+            <label>**Czy wymagane zawiadomienie prokuratury?**</label>
+            <select id="aktProkuratura">
+                <option value="" disabled selected>Wybierz</option>
+                <option>Tak</option>
+                <option>Nie</option>
+            </select>
+
+            <button type="submit">Wyślij Akt Zgonu</button>
+        </form>
+        <div id="statusAkt"></div>
+    </div>
+
+    <!-- SEKCJA ZWŁOK -->
+    <div id="sekcja" class="tab">
+        <form id="sekcjaForm">
+            <label>**Sygnatura sprawy:**</label>
+            <input type="text" id="sekSygnatura">
+
+            <label>**Data sekcji:**</label>
+            <input type="date" id="sekData">
+
+            <label>**Godzina rozpoczęcia:**</label>
+            <input type="time" id="sekStart">
+
+            <label>**Godzina zakończenia:**</label>
+            <input type="time" id="sekEnd">
+
+            <label>**Miejsce sekcji:**</label>
+            <input type="text" id="sekMiejsce">
+
+            <label>**Patomorfolog:**</label>
+            <input type="text" id="sekPatomorfolog">
+
+            <label>**Asystent:**</label>
+            <input type="text" id="sekAsystent">
+
+            <label>**Imię i nazwisko zmarłego:**</label>
+            <input type="text" id="sekImie">
+
+            <label>**Wiek:**</label>
+            <input type="number" id="sekWiek">
+
+            <label>**Płeć:**</label>
+            <select id="sekPlec">
+                <option value="" disabled selected>Wybierz</option>
+                <option>M</option>
+                <option>K</option>
+            </select>
+
+            <label>**Data zgonu:**</label>
+            <input type="date" id="sekDataZgonu">
+
+            <label>**Miejsce zgonu:**</label>
+            <input type="text" id="sekMiejsceZgonu">
+
+            <label>**Opis zewnętrzny:**</label>
+            <textarea id="sekOpisZew"></textarea>
+
+            <label>**Opis wewnętrzny:**</label>
+            <textarea id="sekOpisWe"></textarea>
+
+            <label>**Badania dodatkowe:**</label>
+            <textarea id="sekBadania"></textarea>
+
+            <label>**Wnioski końcowe:**</label>
+            <textarea id="sekWnioski"></textarea>
+
+            <label>**Charakter zgonu:**</label>
+            <select id="sekCharakter">
+                <option value="" disabled selected>Wybierz</option>
+                <option>Naturalny</option>
+                <option>Nienaturalny</option>
+            </select>
+
+            <label>**Czy wskazane dalsze postępowanie prokuratorskie?**</label>
+            <select id="sekProkuratura">
+                <option value="" disabled selected>Wybierz</option>
+                <option>Tak</option>
+                <option>Nie</option>
+            </select>
+
+            <button type="submit">Wyślij Sekcję Zwłok</button>
+        </form>
+        <div id="statusSekcja"></div>
+    </div>
+
+    <!-- BADANIE PSYCHOLOGICZNE -->
+    <div id="psych" class="tab">
+        <form id="psychForm">
+            <label>**Imię i nazwisko:**</label>
+            <input type="text" id="psychImie">
+
+            <label>**Data urodzenia:**</label>
+            <input type="date" id="psychDataUrodzenia">
+
+            <label>**Miejsce zamieszkania:**</label>
+            <input type="text" id="psychAdres">
+
+            <label>**Stanowisko / jednostka:**</label>
+            <input type="text" id="psychStanowisko">
+
+            <label>**Data badania:**</label>
+            <input type="date" id="psychDataBadania">
+
+            <label>**Miejsce badania:**</label>
+            <input type="text" id="psychMiejsceBadania">
+
+            <label>**Psycholog prowadzący:**</label>
+            <input type="text" id="psychOsoba">
+
+            <label>**Ocena odporności na stres:**</label>
+            <select id="psychStres">
+                <option value="" disabled selected>Wybierz</option>
+                <option>Niska</option>
+                <option>Średnia</option>
+                <option>Wysoka</option>
+            </select>
+
+            <label>**Stabilność emocjonalna:**</label>
+            <select id="psychStabilnosc">
+                <option value="" disabled selected>Wybierz</option>
+                <option>Niska</option>
+                <option>Średnia</option>
+                <option>Wysoka</option>
+            </select>
+
+            <label>**Impulsywność:**</label>
+            <select id="psychImpuls">
+                <option value="" disabled selected>Wybierz</option>
+                <option>Tak</option>
+                <option>Nie</option>
+            </select>
+
+            <label>**Poziom empatii:**</label>
+            <select id="psychEmpatia">
+                <option value="" disabled selected>Wybierz</option>
+                <option>Niski</option>
+                <option>Średni</option>
+                <option>Wysoki</option>
+            </select>
+
+            <label>**Wnioski końcowe:**</label>
+            <select id="psychWnioski">
+                <option value="" disabled selected>Wybierz</option>
+                <option>Brak przeciwwskazań</option>
+                <option>Istnieją przeciwwskazania</option>
+            </select>
+
+            <button type="submit">Wyślij Badanie Psychologiczne</button>
+        </form>
+        <div id="statusPsych"></div>
+    </div>
+<!-- POTWIERDZENIE BADAŃ LEKARSKICH -->
+<div id="potwierdzenie" class="tab">
+<form id="potwierdzenieForm">
+<label>**Rodzaj badania:**</label>
+<div style="display:flex; gap:10px; margin-bottom:10px;">
+<label><input type="checkbox" id="badaniePsych"> Psychologiczne</label>
+<label><input type="checkbox" id="badanieLek"> Lekarskie</label>
+<label><input type="checkbox" id="badaniePraca"> Medycyna pracy</label>
+</div>
+<label>**Imię i nazwisko osoby badanej:**</label>
+<input type="text" id="potwierdzenieImie" required>
+<label>**Imię i nazwisko lekarza potwierdzającego:**</label>
+<input type="text" id="potwierdzenieLekarz" required>
+<button type="submit">Wyślij Potwierdzenie Badania</button>
+</form>
+<div id="statusPotwierdzenie"></div>
+</div>
+    <!-- RAPORT -->
+    <div id="raport" class="tab">
+        <form id="raportForm">
+            <label>**Szpital:**</label>
+            <input type="text" id="rapSzpital">
+
+            <label>**Oddział:**</label>
+            <input type="text" id="rapOddzial">
+
+            <label>**Data sporządzenia:**</label>
+            <input type="date" id="rapData">
+
+            <label>**Godzina:**</label>
+            <input type="time" id="rapGodzina">
+
+            <label>**Sporządził:**</label>
+            <input type="text" id="rapOsoba">
+
+            <label>**Dane pacjenta (Imię, Wiek, Płeć, PESEL, Adres):**</label>
+            <textarea id="rapPacjent"></textarea>
+
+            <label>**Powód przyjęcia:**</label>
+            <textarea id="rapPowod"></textarea>
+
+            <label>**Stan pacjenta przy przyjęciu:**</label>
+            <textarea id="rapStan"></textarea>
+
+            <label>**Przebieg leczenia:**</label>
+            <textarea id="rapPrzebieg"></textarea>
+
+            <label>**Wyniki badań:**</label>
+            <textarea id="rapWyniki"></textarea>
+
+            <label>**Rozpoznanie końcowe:**</label>
+            <textarea id="rapRozpoznanie"></textarea>
+
+            <label>**Zalecenia / dalsze postępowanie:**</label>
+            <textarea id="rapZalecenia"></textarea>
+
+            <button type="submit">Wyślij Raport</button>
+        </form>
+        <div id="statusRaport"></div>
+    </div>
+</div>
+<script>
+// --- Zakładki ---
+function showTab(id,event){const tabs=document.querySelectorAll('.tab'); const tabBtns=document.querySelectorAll('.tab-btn'); tabs.forEach(t=>t.classList.remove('active')); tabBtns.forEach(b=>b.classList.remove('active')); document.getElementById(id).classList.add('active'); if(event && event.currentTarget) event.currentTarget.classList.add('active');}
+document.getElementById('aktMiejsce')?.addEventListener('change',function(){document.getElementById('aktMiejsceInne').style.display=this.value==='Inne'?'block':'none';});
+async function sendWebhook(url,content){try{const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({content})});if(!res.ok)throw new Error(res.statusText);return true;}catch(e){console.error(e); return false;}}
+async function sendWebhookEmbed(url,embed){try{const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({embeds:[embed]})});if(!res.ok)throw new Error(res.statusText);return true;}catch(e){console.error(e); return false;}}
+function setStatus(id,message,success){const el=document.getElementById(id); el.textContent=message; el.classList.remove('status-success','status-error'); if(success===true) el.classList.add('status-success'); if(success===false) el.classList.add('status-error');}
+    // -------------------------
+    // FORMULARZE
+    // -------------------------
+
+    // KARTA ZGONU
+    document.getElementById('aktForm').addEventListener('submit', async e=>{
+        e.preventDefault();
+        setStatus('statusAkt','Wysyłam...',null);
+        const content = `⚰️ KARTA AKTU ZGONU ⚰️\n\nImię i nazwisko: ${document.getElementById('aktImie').value}\nData urodzenia: ${document.getElementById('aktDataUrodzenia').value}\nPESEL/ID: ${document.getElementById('aktPESEL').value}\nPłeć: ${document.getElementById('aktPlec').value}\nAdres: ${document.getElementById('aktAdres').value}\nData zgonu: ${document.getElementById('aktDataZgonu').value}\nGodzina: ${document.getElementById('aktGodzinaZgonu').value}\nMiejsce zgonu: ${document.getElementById('aktMiejsce').value==='Inne'?document.getElementById('aktMiejsceInne').value:document.getElementById('aktMiejsce').value}\nWymagane zawiadomienie prokuratury: ${document.getElementById('aktProkuratura').value}`;
+        const urls = [
+            "https://discord.com/api/webhooks/1436293503570284686/yd0vuqDO5rwHc7tV3KlL9ta7Ym5L3Knl7uH1aAGWR229xQ-C1DSZvR2hPdsoAt40LsZu",
+            "https://discord.com/api/webhooks/1436320122569625683/mru2WuvLwBqsZriP9DCWDozxzARwtCksebJtg5z357LI6Q4k4UyH8_p21SN3zEfUvEGf"
+        ];
+        let success=true;
+        for(const u of urls){ if(!await sendWebhook(u,content)) success=false;}
+        setStatus('statusAkt', success?'Wysłano pomyślnie!':'Błąd wysyłania', success);
+        e.target.reset();
+        document.getElementById('aktMiejsceInne').style.display='none';
+    });
+
+    // SEKCJA ZWŁOK
+    document.getElementById('sekcjaForm').addEventListener('submit', async e=>{
+        e.preventDefault();
+        setStatus('statusSekcja','Wysyłam...',null);
+        const fields=['Sygnatura','Data','Start','End','Miejsce','Patomorfolog','Asystent','Imie','Wiek','Plec','DataZgonu','MiejsceZgonu','OpisZew','OpisWe','Badania','Wnioski','Charakter','Prokuratura'];
+        let content = "SEKCJA ZWŁOK — RAPORT PATOLOGICZNY\n";
+        for(const f of fields) content += `${f}: ${document.getElementById('sek'+f).value}\n`;
+        const urls = [
+            "https://discord.com/api/webhooks/1436306582064332801/PQFVgvHbL0IXcnssn3n83cjvKSZb9FazHwBuD2w8vCHUGrpZoxWpNcT0bU_-yK5L5qTG",
+            "https://discord.com/api/webhooks/1436320612078452756/nc02wMUyalWlPaHL30ZodCM60XerNo0GFpQ03gcUJO5-2zNb-ppDKSETFc5v5otkEaMW"
+        ];
+        let success=true;
+        for(const u of urls){ if(!await sendWebhook(u,content)) success=false;}
+        setStatus('statusSekcja', success?'Wysłano pomyślnie!':'Błąd wysyłania', success);
+        e.target.reset();
+    });
+
+    // BADANIE PSYCHOLOGICZNE
+    document.getElementById('psychForm').addEventListener('submit', async e=>{
+        e.preventDefault();
+        setStatus('statusPsych','Wysyłam...',null);
+        const fields=['Imie','DataUrodzenia','Adres','Stanowisko','DataBadania','MiejsceBadania','Osoba','Stres','Stabilnosc','Impuls','Empatia','Wnioski'];
+        let content="BADANIE PSYCHOLOGICZNE KANDYDATA DO SŁUŻBY\n";
+        for(const f of fields) content += `${f}: ${document.getElementById('psych'+f).value}\n`;
+        const urls=[
+            "https://discord.com/api/webhooks/1436306790651531266/uvY5QOLl6j9s1760oPRna1e8FWLIJd8TBFpcDdZpfNoAFyS0sIx2RsAP-873zJpywZr-",
+            "https://discord.com/api/webhooks/1436320457543520386/h-veeXBnF7eup7ncLULPO1kBi6uEkNnhnXjqA6FluOGdwz-EjkafGmGfUR1aGy5_lV8F"
+        ];
+        let success=true;
+        for(const u of urls){ if(!await sendWebhook(u,content)) success=false;}
+        setStatus('statusPsych', success?'Wysłano pomyślnie!':'Błąd wysyłania', success);
+        e.target.reset();
+    });
+
+    // RAPORT
+    document.getElementById('raportForm').addEventListener('submit', async e=>{
+        e.preventDefault();
+        setStatus('statusRaport','Wysyłam...',null);
+        const fields=['Szpital','Oddzial','Data','Godzina','Osoba','Pacjent','Powod','Stan','Przebieg','Wyniki','Rozpoznanie','Zalecenia'];
+        let content="RAPORT SZPITALNY\n";
+        for(const f of fields) content += `${f}: ${document.getElementById('rap'+f).value}\n`;
+        const urls=[
+            "https://discord.com/api/webhooks/1436306969659969647/Qkg3tnrr3uurcfOTwUNDnQF6JMyaR0FOvhw-YY0dod7Uc-YnZXbeyLuc-rudEIg_Inlg"
+        ];
+        let success=true;
+        for(const u of urls){ if(!await sendWebhook(u,content)) success=false;}
+        setStatus('statusRaport', success?'Wysłano pomyślnie!':'Błąd wysyłania', success);
+        e.target.reset();
+    });
+// --- POTWIERDZENIE BADAŃ LEKARSKICH ---
+document.getElementById('potwierdzenieForm').addEventListener('submit', async e=>{
+e.preventDefault();
+setStatus('statusPotwierdzenie','Wysyłam...',null);
+
+let rodzaje = [];
+if(document.getElementById('badaniePsych').checked) rodzaje.push("Psychologiczne");
+if(document.getElementById('badanieLek').checked) rodzaje.push("Lekarskie");
+if(document.getElementById('badaniePraca').checked) rodzaje.push("Medycyna pracy");
+
+const embedLek = {
+title:"✅ Potwierdzenie badania lekarskiego",
+color:0x2ecc71,
+fields:[
+{name:"👤 Osoba badana", value:document.getElementById('potwierdzenieImie').value || "Brak danych", inline:false},
+{name:"🩺 Potwierdził", value:document.getElementById('potwierdzenieLekarz').value || "Brak danych", inline:false},
+{name:"📋 Rodzaj badania", value:rodzaje.length ? rodzaje.join(", ") : "Brak zaznaczeń", inline:false}
+],
+footer:{text:"Uniwersyteckie Centrum Kliniczne w Gdańsku - Summer RP"},
+timestamp:new Date().toISOString()
+};
+
+await sendWebhookEmbed("https://discord.com/api/webhooks/1457146644868108496/ix9Xqa8mwfU5oB7Tsye_Q4D22BBMHD9E_yyTRMRm3A0GDB0AyCIIJ4_7UaMec2CEvsG9", embedLek);
+
+setStatus('statusPotwierdzenie','Wysłano pomyślnie!',true);
+e.target.reset();
+});
+</script>
+</body>
+</html>
